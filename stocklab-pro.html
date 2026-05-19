@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STOCKLAB PRO</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-base:      #fdf6f0;
+    --bg-card:      #fff9f6;
+    --bg-panel:     #fef0ea;
+    --pink-light:   #fce8e0;
+    --pink-mid:     #f5c9bc;
+    --rose:         #c97060;
+    --rose-dark:    #a05040;
+    --beige:        #f0e6dc;
+    --beige-dark:   #d4c0b0;
+    --text-primary: #3a2820;
+    --text-secondary:#7a5848;
+    --text-muted:   #b09080;
+    --gold-light:   #e8d4b0;
+    --green:        #3a8060;
+    --red:          #c03030;
+    --shadow-soft:  0 2px 20px rgba(180,100,80,0.08);
+    --shadow-card:  0 4px 30px rgba(180,100,80,0.14);
+    --radius:       16px;
+    --radius-sm:    10px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{
+    font-family:'Noto Sans KR',sans-serif;
+    background:var(--bg-base);color:var(--text-primary);min-height:100vh;
+    background-image:
+      radial-gradient(ellipse at 15% 10%,rgba(252,232,224,.5) 0%,transparent 50%),
+      radial-gradient(ellipse at 85% 90%,rgba(245,201,188,.35) 0%,transparent 50%);
+  }
+  header{
+    background:linear-gradient(135deg,#fdf0ea,#fce8df);
+    border-bottom:1px solid var(--pink-mid);
+    padding:0 20px;position:sticky;top:0;z-index:100;
+    box-shadow:0 2px 16px rgba(200,120,96,.10);
+  }
+  .header-inner{
+    max-width:1100px;margin:0 auto;
+    display:flex;align-items:center;justify-content:space-between;
+    height:60px;gap:12px;flex-wrap:wrap;
+  }
+  .logo{
+    font-family:'Cormorant Garamond',serif;
+    font-size:20px;font-weight:600;color:var(--rose-dark);
+    letter-spacing:2px;display:flex;align-items:center;gap:7px;white-space:nowrap;
+  }
+  .logo-dot{width:7px;height:7px;border-radius:50%;background:var(--rose);}
+  nav{display:flex;gap:3px;flex-wrap:wrap;}
+  nav button{
+    background:none;border:none;cursor:pointer;
+    font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:500;
+    color:var(--text-secondary);padding:7px 14px;border-radius:20px;transition:all .2s;
+  }
+  nav button:hover{background:var(--pink-light);color:var(--rose);}
+  nav button.active{background:var(--rose);color:#fff;}
+  .server-badge{
+    display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-muted);
+    background:var(--beige);padding:5px 12px;border-radius:20px;
+    border:1px solid var(--beige-dark);white-space:nowrap;
+  }
+  .dot-live{width:7px;height:7px;border-radius:50%;background:#ccc;transition:background .3s;}
+  .dot-live.on{background:var(--green);box-shadow:0 0 6px rgba(58,128,96,.5);}
+  .dot-live.err{background:var(--red);}
+  main{max-width:1100px;margin:0 auto;padding:20px 16px;}
+  .section{display:none;} .section.active{display:block;}
+  .page-title{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:500;color:var(--rose-dark);margin-bottom:3px;}
+  .page-sub{font-size:12px;color:var(--text-muted);margin-bottom:20px;}
+  .card{background:var(--bg-card);border:1px solid var(--pink-light);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow-soft);margin-bottom:14px;}
+  .card-title{font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:600;color:var(--rose-dark);margin-bottom:14px;display:flex;align-items:center;gap:7px;}
+  .search-wrap{display:flex;gap:8px;margin-bottom:16px;position:relative;}
+  .search-wrap input{
+    flex:1;padding:11px 18px;background:#fff;
+    border:1.5px solid var(--pink-mid);border-radius:30px;
+    font-family:'Noto Sans KR',sans-serif;font-size:14px;color:var(--text-primary);
+    outline:none;transition:border-color .2s;
+  }
+  .search-wrap input:focus{border-color:var(--rose);}
+  .search-wrap input::placeholder{color:var(--text-muted);}
+  #autocomplete,#autocomplete2{
+    position:absolute;top:100%;left:0;right:80px;
+    background:#fff;border:1.5px solid var(--pink-mid);
+    border-radius:var(--radius-sm);box-shadow:var(--shadow-card);
+    z-index:200;max-height:220px;overflow-y:auto;display:none;
+  }
+  .ac-item{
+    padding:10px 16px;font-size:13px;cursor:pointer;
+    display:flex;justify-content:space-between;align-items:center;
+    border-bottom:1px solid var(--pink-light);transition:background .15s;
+  }
+  .ac-item:last-child{border-bottom:none;}
+  .ac-item:hover{background:var(--pink-light);}
+  .ac-code{font-size:11px;color:var(--text-muted);}
+  .btn{
+    padding:11px 22px;
+    background:linear-gradient(135deg,var(--rose),var(--rose-dark));
+    color:#fff;border:none;border-radius:30px;
+    font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:500;
+    cursor:pointer;transition:opacity .2s,transform .1s;white-space:nowrap;
+  }
+  .btn:hover{opacity:.9;transform:translateY(-1px);}
+  .btn:active{transform:translateY(0);}
+  .btn-sm{padding:6px 14px;font-size:12px;}
+  .btn-outline{background:none;border:1.5px solid var(--rose);color:var(--rose);}
+  .btn-outline:hover{background:var(--pink-light);}
+  .quick-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;}
+  .quick-btn{
+    padding:5px 14px;border-radius:20px;font-size:12px;
+    border:1.5px solid var(--pink-mid);background:none;
+    color:var(--text-secondary);cursor:pointer;transition:all .2s;
+    font-family:'Noto Sans KR',sans-serif;
+  }
+  .quick-btn:hover{border-color:var(--rose);color:var(--rose);background:var(--pink-light);}
+  .up{color:var(--red);} .down{color:var(--green);} .flat{color:var(--text-muted);}
+  .tag{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:500;}
+  .tag-kospi{background:var(--pink-light);color:var(--rose);}
+  .tag-kosdaq{background:var(--gold-light);color:#8a6030;}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  thead tr{border-bottom:1.5px solid var(--pink-mid);}
+  th{text-align:left;padding:9px 11px;color:var(--text-muted);font-weight:500;font-size:11px;letter-spacing:.5px;white-space:nowrap;}
+  td{padding:10px 11px;border-bottom:1px solid var(--pink-light);}
+  tr:last-child td{border-bottom:none;}
+  tr:hover td{background:rgba(245,201,188,.14);}
+  .port-summary{
+    background:linear-gradient(135deg,var(--rose),var(--rose-dark));
+    color:#fff;border-radius:var(--radius);padding:22px;margin-bottom:14px;
+  }
+  .port-total{font-family:'Cormorant Garamond',serif;font-size:34px;font-weight:300;}
+  .port-stats{display:flex;gap:24px;margin-top:14px;flex-wrap:wrap;}
+  .port-stat-label{font-size:11px;opacity:.7;margin-bottom:2px;}
+  .port-stat-val{font-size:15px;font-weight:600;}
+  .ai-panel{
+    background:linear-gradient(135deg,#fff5f0,#ffeee8);
+    border:1.5px solid var(--pink-mid);border-radius:var(--radius);padding:18px;margin-bottom:14px;
+  }
+  .ai-header{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+  .ai-icon{
+    width:34px;height:34px;border-radius:50%;
+    background:linear-gradient(135deg,var(--rose),var(--rose-dark));
+    display:flex;align-items:center;justify-content:center;
+    color:#fff;font-size:15px;flex-shrink:0;
+  }
+  .ai-title{font-size:13px;font-weight:600;color:var(--rose-dark);}
+  .ai-title small{font-size:11px;color:var(--text-muted);font-weight:400;margin-left:5px;}
+  .ai-body{font-size:13px;color:var(--text-secondary);line-height:1.75;white-space:pre-line;}
+  .stock-row{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:12px 14px;border-radius:var(--radius-sm);
+    background:var(--bg-panel);margin-bottom:8px;
+    transition:background .2s;cursor:pointer;
+  }
+  .stock-row:hover{background:var(--pink-light);}
+  .stock-name{font-size:14px;font-weight:500;}
+  .stock-code{font-size:11px;color:var(--text-muted);}
+  .stock-price{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:var(--rose-dark);}
+  .stock-change{font-size:12px;margin-top:2px;text-align:right;}
+  .alert{padding:12px 16px;border-radius:var(--radius-sm);font-size:13px;margin-bottom:12px;background:rgba(192,48,48,.08);border:1px solid rgba(192,48,48,.2);color:var(--red);}
+  .alert.info{background:var(--beige);border-color:var(--beige-dark);color:var(--text-secondary);}
+  .loading{text-align:center;padding:32px;color:var(--text-muted);font-size:13px;}
+  .spinner{width:28px;height:28px;border:3px solid var(--pink-light);border-top-color:var(--rose);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 10px;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .fade-in{animation:fadeIn .35s ease;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+  @media(max-width:680px){nav button{padding:6px 10px;font-size:12px;}}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-inner">
+    <div class="logo"><div class="logo-dot"></div>STOCKLAB PRO</div>
+    <nav>
+      <button class="active" onclick="showTab('watch',this)">워치리스트</button>
+      <button onclick="showTab('analysis',this)">종목분석</button>
+      <button onclick="showTab('portfolio',this)">포트폴리오</button>
+      <button onclick="showTab('ai',this)">AI 분석</button>
+    </nav>
+    <div class="server-badge">
+      <div class="dot-live" id="serverDot"></div>
+      <span id="serverStatus">확인 중...</span>
+    </div>
+  </div>
+</header>
+
+<main>
+
+<!-- ══ 워치리스트 ══ -->
+<section class="section active fade-in" id="sec-watch">
+  <div class="page-title">실시간 워치리스트</div>
+  <div class="page-sub">네이버금융 실시간 주가 연동 · 60초 자동 갱신</div>
+  <div class="search-wrap">
+    <input type="text" id="watchInput" placeholder="종목명 또는 코드 입력 (예: 삼성전자, 005930)"
+      oninput="onAC('watchInput','autocomplete')"
+      onkeydown="if(event.key==='Enter') addToWatch()">
+    <div id="autocomplete"></div>
+    <button class="btn" onclick="addToWatch()">+ 추가</button>
+  </div>
+  <div class="quick-row">
+    <span style="font-size:11px;color:var(--text-muted);line-height:28px;">빠른추가:</span>
+    <button class="quick-btn" onclick="addCode('005930','삼성전자')">삼성전자</button>
+    <button class="quick-btn" onclick="addCode('000660','SK하이닉스')">SK하이닉스</button>
+    <button class="quick-btn" onclick="addCode('005380','현대차')">현대차</button>
+    <button class="quick-btn" onclick="addCode('035420','NAVER')">NAVER</button>
+    <button class="quick-btn" onclick="addCode('068270','셀트리온')">셀트리온</button>
+    <button class="quick-btn" onclick="addCode('247540','에코프로비엠')">에코프로비엠</button>
+  </div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+    <div style="font-size:12px;color:var(--text-muted);" id="lastUpdate"></div>
+    <button class="btn btn-sm btn-outline" onclick="refreshAll()">🔄 새로고침</button>
+  </div>
+  <div id="watchList"></div>
+</section>
+
+<!-- ══ 종목분석 ══ -->
+<section class="section fade-in" id="sec-analysis">
+  <div class="page-title">종목 분석</div>
+  <div class="page-sub">실시간 주가 조회</div>
+  <div class="search-wrap">
+    <input type="text" id="analysisInput" placeholder="종목코드 또는 종목명"
+      oninput="onAC('analysisInput','autocomplete2')"
+      onkeydown="if(event.key==='Enter') runAnalysis()">
+    <div id="autocomplete2"></div>
+    <button class="btn" onclick="runAnalysis()">조회</button>
+  </div>
+  <div id="analysisResult"></div>
+</section>
+
+<!-- ══ 포트폴리오 ══ -->
+<section class="section fade-in" id="sec-portfolio">
+  <div class="page-title">포트폴리오</div>
+  <div class="page-sub">보유 종목 실시간 평가손익</div>
+  <div id="portSummary"></div>
+  <div class="card">
+    <div class="card-title">💼 종목 추가</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
+      <input type="text" id="pCode" placeholder="종목코드" style="width:100px;padding:8px 12px;border:1.5px solid var(--pink-mid);border-radius:8px;font-size:13px;outline:none;background:#fff;">
+      <input type="text" id="pName" placeholder="종목명" style="width:100px;padding:8px 12px;border:1.5px solid var(--pink-mid);border-radius:8px;font-size:13px;outline:none;background:#fff;">
+      <input type="number" id="pQty" placeholder="수량" style="width:80px;padding:8px 12px;border:1.5px solid var(--pink-mid);border-radius:8px;font-size:13px;outline:none;background:#fff;">
+      <input type="number" id="pBuy" placeholder="매입가" style="width:100px;padding:8px 12px;border:1.5px solid var(--pink-mid);border-radius:8px;font-size:13px;outline:none;background:#fff;">
+      <button class="btn btn-sm" onclick="addPort()">+ 추가</button>
+      <button class="btn btn-sm btn-outline" onclick="refreshPort()">🔄 현재가 업데이트</button>
+    </div>
+    <div id="portTable"></div>
+  </div>
+</section>
+
+<!-- ══ AI 분석 ══ -->
+<section class="section fade-in" id="sec-ai">
+  <div class="page-title">AI 투자 분석</div>
+  <div class="page-sub">실시간 주가 수집 → Claude AI 분석</div>
+  <div class="card">
+    <div class="card-title">🤖 분석 설정</div>
+    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+      <input type="text" id="aiCode" placeholder="종목코드 (예: 005930)"
+        style="flex:1;min-width:150px;padding:10px 16px;border:1.5px solid var(--pink-mid);border-radius:24px;font-size:13px;outline:none;background:#fff;"
+        onkeydown="if(event.key==='Enter') runAI()">
+      <button class="btn" onclick="runAI()">✨ AI 분석</button>
+    </div>
+    <div class="quick-row">
+      <button class="quick-btn" onclick="document.getElementById('aiCode').value='005930'">삼성전자</button>
+      <button class="quick-btn" onclick="document.getElementById('aiCode').value='000660'">SK하이닉스</button>
+      <button class="quick-btn" onclick="document.getElementById('aiCode').value='005380'">현대차</button>
+      <button class="quick-btn" onclick="document.getElementById('aiCode').value='035420'">NAVER</button>
+      <button class="quick-btn" onclick="document.getElementById('aiCode').value='068270'">셀트리온</button>
+    </div>
+  </div>
+  <div id="aiResult"></div>
+</section>
+
+</main>
+
+<script>
+// Railway 배포 시 자동으로 같은 서버 주소 사용, 로컬은 3000포트
+const API = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? 'http://localhost:3000'
+  : window.location.origin;
+let watchList = JSON.parse(localStorage.getItem('sl_watch') || '[]');
+let portfolio  = JSON.parse(localStorage.getItem('sl_port')  || '[]');
+let acTimer = null;
+
+// ── 탭 ──
+function showTab(name, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('sec-' + name).classList.add('active');
+  btn.classList.add('active');
+  if (name === 'portfolio') { renderPort(); refreshPort(); }
+}
+
+// ── 서버 체크 ──
+async function checkServer() {
+  try {
+    const r = await fetch(`${API}/api/health`, { signal: AbortSignal.timeout(3000) });
+    const d = await r.json();
+    if (d.ok) {
+      document.getElementById('serverDot').className = 'dot-live on';
+      document.getElementById('serverStatus').textContent = '서버 연결됨';
+      return true;
+    }
+  } catch {}
+  document.getElementById('serverDot').className = 'dot-live err';
+  document.getElementById('serverStatus').textContent = '서버 오프라인';
+  return false;
+}
+
+// ── API ──
+async function apiGet(path) {
+  const r = await fetch(API + path);
+  const d = await r.json();
+  if (!d.ok) throw new Error(d.error);
+  return d.data;
+}
+
+// ── 자동완성 ──
+function onAC(inputId, acId) {
+  clearTimeout(acTimer);
+  const val = document.getElementById(inputId).value.trim();
+  if (!val) { document.getElementById(acId).style.display = 'none'; return; }
+  acTimer = setTimeout(async () => {
+    try {
+      const results = await apiGet(`/api/search?query=${encodeURIComponent(val)}`);
+      const el = document.getElementById(acId);
+      if (!results.length) { el.style.display = 'none'; return; }
+      el.innerHTML = results.map(i => `
+        <div class="ac-item" onclick="selectAC('${inputId}','${acId}','${i.code}','${i.name.replace(/'/g,"\\'")}')">
+          <span>${i.name}</span><span class="ac-code">${i.code}</span>
+        </div>`).join('');
+      el.style.display = 'block';
+    } catch {}
+  }, 350);
+}
+
+function selectAC(inputId, acId, code, name) {
+  document.getElementById(inputId).value = inputId === 'watchInput' ? name : code;
+  document.getElementById(acId).style.display = 'none';
+  if (inputId === 'watchInput') addCode(code, name);
+}
+
+document.addEventListener('click', () => {
+  document.getElementById('autocomplete').style.display = 'none';
+  document.getElementById('autocomplete2').style.display = 'none';
+});
+
+// ── 워치리스트 ──
+function saveWatch() { localStorage.setItem('sl_watch', JSON.stringify(watchList)); }
+
+async function addToWatch() {
+  const val = document.getElementById('watchInput').value.trim();
+  if (!val) return;
+  if (/^\d{6}$/.test(val)) {
+    await addCode(val, val);
+  } else {
+    try {
+      const res = await apiGet(`/api/search?query=${encodeURIComponent(val)}`);
+      if (res.length) await addCode(res[0].code, res[0].name);
+      else alert('종목을 찾을 수 없습니다.');
+    } catch { alert('서버에 연결할 수 없습니다.'); }
+  }
+  document.getElementById('watchInput').value = '';
+}
+
+async function addCode(code, name) {
+  if (watchList.find(w => w.code === code)) return;
+  watchList.push({ code, name });
+  saveWatch();
+  await refreshAll();
+}
+
+function removeWatch(code) {
+  watchList = watchList.filter(w => w.code !== code);
+  saveWatch();
+  renderWatchRows(watchList.map(w => ({ ...w, price: null, changeRate: 0 })));
+}
+
+async function refreshAll() {
+  const el = document.getElementById('watchList');
+  if (!watchList.length) {
+    el.innerHTML = '<div class="alert info">워치리스트가 비어 있습니다. 종목을 추가해보세요.</div>';
+    return;
+  }
+  const ok = await checkServer();
+  if (!ok) {
+    el.innerHTML = `<div class="alert">⚠️ 서버 오프라인<br>터미널에서 <strong>node server.js</strong> 를 실행하세요.<br><br>
+      <code style="font-size:12px;background:rgba(0,0,0,.06);padding:6px 10px;border-radius:6px;display:block;margin-top:8px;">node server.js</code></div>`;
+    return;
+  }
+  try {
+    const codes = watchList.map(w => w.code);
+    const data = await apiGet(`/api/stocks?codes=${codes.join(',')}`);
+    data.forEach(d => {
+      const w = watchList.find(w => w.code === d.code);
+      if (w && d.name && d.name !== d.code) w.name = d.name;
+    });
+    saveWatch();
+    renderWatchRows(data);
+    document.getElementById('lastUpdate').textContent = '업데이트: ' + new Date().toLocaleTimeString('ko-KR');
+  } catch (e) {
+    el.innerHTML = `<div class="alert">주가 조회 오류: ${e.message}</div>`;
+  }
+}
+
+function renderWatchRows(stocks) {
+  const el = document.getElementById('watchList');
+  el.innerHTML = stocks.map(s => {
+    const w = watchList.find(w => w.code === s.code) || {};
+    const name = (s.name && s.name !== s.code) ? s.name : (w.name || s.code);
+    const rate = s.changeRate || 0;
+    const cls = rate > 0 ? 'up' : rate < 0 ? 'down' : 'flat';
+    const sign = rate > 0 ? '▲' : rate < 0 ? '▼' : '';
+    return `
+      <div class="stock-row fade-in" onclick="goAnalysis('${s.code}')">
+        <div>
+          <div class="stock-name">${name}</div>
+          <div class="stock-code">${s.code}</div>
+        </div>
+        <div style="flex:1;padding:0 14px;text-align:right;">
+          <div class="stock-price">${s.price ? s.price.toLocaleString() : '-'}<span style="font-size:12px;font-family:'Noto Sans KR'"> 원</span></div>
+          <div class="stock-change ${cls}">${sign} ${Math.abs(rate).toFixed(2)}%</div>
+        </div>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-sm btn-outline" onclick="event.stopPropagation();startAI('${s.code}')">AI</button>
+          <button class="btn btn-sm" style="background:rgba(192,80,80,.12);color:var(--red);border:none;" onclick="event.stopPropagation();removeWatch('${s.code}')">✕</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function goAnalysis(code) {
+  document.getElementById('analysisInput').value = code;
+  showTab('analysis', document.querySelectorAll('nav button')[1]);
+  runAnalysis();
+}
+function startAI(code) {
+  document.getElementById('aiCode').value = code;
+  showTab('ai', document.querySelectorAll('nav button')[3]);
+  runAI();
+}
+
+// ── 종목분석 ──
+async function runAnalysis() {
+  const input = document.getElementById('analysisInput').value.trim();
+  if (!input) return;
+  const result = document.getElementById('analysisResult');
+  result.innerHTML = '<div class="loading"><div class="spinner"></div>실시간 주가 조회 중...</div>';
+
+  const ok = await checkServer();
+  if (!ok) { result.innerHTML = '<div class="alert">⚠️ node server.js 실행 필요</div>'; return; }
+
+  let code = input;
+  if (!/^\d{6}$/.test(input)) {
+    try {
+      const res = await apiGet(`/api/search?query=${encodeURIComponent(input)}`);
+      if (!res.length) { result.innerHTML = '<div class="alert">종목을 찾을 수 없습니다.</div>'; return; }
+      code = res[0].code;
+    } catch (e) { result.innerHTML = `<div class="alert">${e.message}</div>`; return; }
+  }
+
+  try {
+    const s = await apiGet(`/api/stock?code=${code}`);
+    const rate = s.changeRate || 0;
+    const cls = rate > 0 ? 'up' : rate < 0 ? 'down' : 'flat';
+    const sign = rate > 0 ? '▲' : rate < 0 ? '▼' : '';
+    result.innerHTML = `
+      <div class="card fade-in">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
+          <div>
+            <div style="font-size:22px;font-weight:700;">${s.name}</div>
+            <div style="font-size:12px;color:var(--text-muted);">${s.code}</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-family:'Cormorant Garamond',serif;font-size:34px;font-weight:600;color:var(--rose-dark);">
+              ${s.price ? s.price.toLocaleString() : '-'}<span style="font-size:14px;font-family:'Noto Sans KR'"> 원</span>
+            </div>
+            <div class="${cls}" style="font-size:14px;">${sign} ${Math.abs(rate).toFixed(2)}%</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;">
+          ${[['거래량', s.volume || '-'], ['시가총액', s.marketCap ? s.marketCap + '억' : '-'], ['조회시각', s.updatedAt]].map(([k,v]) => `
+            <div style="background:var(--bg-panel);padding:10px 12px;border-radius:var(--radius-sm);">
+              <div style="font-size:11px;color:var(--text-muted);margin-bottom:3px;">${k}</div>
+              <div style="font-size:14px;font-weight:600;color:var(--rose-dark);">${v}</div>
+            </div>`).join('')}
+        </div>
+        <div style="margin-top:14px;display:flex;gap:8px;">
+          <button class="btn btn-sm btn-outline" onclick="startAI('${s.code}')">✨ AI 분석하기</button>
+          <button class="btn btn-sm btn-outline" onclick="addCode('${s.code}','${s.name}')">+ 워치리스트 추가</button>
+        </div>
+      </div>
+      <div class="alert info">ℹ️ 재무지표(PER·PBR·ROE)는 DART API 연동 시 추가 표시됩니다.</div>`;
+  } catch (e) {
+    result.innerHTML = `<div class="alert">조회 오류: ${e.message}</div>`;
+  }
+}
+
+// ── 포트폴리오 ──
+function savePort() { localStorage.setItem('sl_port', JSON.stringify(portfolio)); }
+
+function addPort() {
+  const code = document.getElementById('pCode').value.trim();
+  const name = document.getElementById('pName').value.trim();
+  const qty  = parseInt(document.getElementById('pQty').value);
+  const buy  = parseInt(document.getElementById('pBuy').value);
+  if (!code || !qty || !buy) { alert('종목코드, 수량, 매입가를 입력하세요.'); return; }
+  portfolio.push({ code, name: name || code, qty, buy, cur: null });
+  savePort();
+  ['pCode','pName','pQty','pBuy'].forEach(id => document.getElementById(id).value = '');
+  refreshPort();
+}
+
+function removePortItem(i) { portfolio.splice(i, 1); savePort(); renderPort(); }
+
+async function refreshPort() {
+  if (!portfolio.length) return;
+  const ok = await checkServer();
+  if (!ok) return;
+  try {
+    const codes = [...new Set(portfolio.map(p => p.code))];
+    const data = await apiGet(`/api/stocks?codes=${codes.join(',')}`);
+    const map = {};
+    data.forEach(d => { if (d.price) map[d.code] = d; });
+    portfolio = portfolio.map(p => ({
+      ...p,
+      cur: map[p.code]?.price || p.cur,
+      name: map[p.code]?.name || p.name
+    }));
+    savePort();
+    renderPort();
+  } catch {}
+}
+
+function renderPort() {
+  // 요약
+  const sumEl = document.getElementById('portSummary');
+  if (portfolio.length) {
+    const totalBuy = portfolio.reduce((s, p) => s + p.buy * p.qty, 0);
+    const totalCur = portfolio.reduce((s, p) => s + (p.cur || p.buy) * p.qty, 0);
+    const pl = totalCur - totalBuy;
+    const rate = totalBuy ? (pl / totalBuy * 100) : 0;
+    sumEl.innerHTML = `
+      <div class="port-summary fade-in">
+        <div style="font-size:11px;opacity:.7;margin-bottom:3px;">총 평가금액</div>
+        <div class="port-total">₩ ${totalCur.toLocaleString()}</div>
+        <div style="font-size:11px;opacity:.7;margin-top:4px;">투자원금 ₩${totalBuy.toLocaleString()}</div>
+        <div class="port-stats">
+          <div><div class="port-stat-label">평가손익</div><div class="port-stat-val">${pl >= 0 ? '+' : ''}₩${pl.toLocaleString()}</div></div>
+          <div><div class="port-stat-label">수익률</div><div class="port-stat-val">${rate >= 0 ? '+' : ''}${rate.toFixed(2)}%</div></div>
+          <div><div class="port-stat-label">종목수</div><div class="port-stat-val">${portfolio.length}종목</div></div>
+        </div>
+      </div>`;
+  } else { sumEl.innerHTML = ''; }
+
+  // 테이블
+  const tEl = document.getElementById('portTable');
+  if (!portfolio.length) {
+    tEl.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:13px;">보유 종목을 추가하세요.</div>';
+    return;
+  }
+  tEl.innerHTML = `
+    <div style="overflow-x:auto;">
+      <table>
+        <thead><tr><th>종목명</th><th>코드</th><th>수량</th><th>매입가</th><th>현재가</th><th>평가손익</th><th>수익률</th><th></th></tr></thead>
+        <tbody>
+          ${portfolio.map((p, i) => {
+            const cur = p.cur || p.buy;
+            const pl = (cur - p.buy) * p.qty;
+            const rate = (cur - p.buy) / p.buy * 100;
+            const cls = pl >= 0 ? 'up' : 'down';
+            return `<tr>
+              <td style="font-weight:500">${p.name}</td>
+              <td style="color:var(--text-muted)">${p.code}</td>
+              <td>${p.qty.toLocaleString()}</td>
+              <td>${p.buy.toLocaleString()}</td>
+              <td style="font-weight:600">${cur.toLocaleString()}</td>
+              <td class="${cls}">${pl >= 0 ? '+' : ''}${pl.toLocaleString()}</td>
+              <td class="${cls}">${rate >= 0 ? '+' : ''}${rate.toFixed(2)}%</td>
+              <td><button class="btn btn-sm" style="background:rgba(192,80,80,.12);color:var(--red);border:none;" onclick="removePortItem(${i})">✕</button></td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+// ── AI 분석 ──
+async function runAI() {
+  const code = document.getElementById('aiCode').value.trim();
+  if (!code) return;
+  const result = document.getElementById('aiResult');
+  result.innerHTML = '<div class="loading"><div class="spinner"></div>실시간 주가 수집 → AI 분석 중...</div>';
+
+  const ok = await checkServer();
+  if (!ok) { result.innerHTML = '<div class="alert">⚠️ node server.js 실행 필요</div>'; return; }
+
+  let stock;
+  try { stock = await apiGet(`/api/stock?code=${code}`); }
+  catch (e) { result.innerHTML = `<div class="alert">주가 조회 오류: ${e.message}</div>`; return; }
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: `당신은 한국 주식시장 전문 투자 분석가입니다.
+실시간으로 수집된 주가 데이터를 바탕으로 투자 분석 의견을 제공하세요.
+한국어로 400~600자 이내로 작성하세요.
+1. 현재 주가 수준 평가 2. 단기/중기 투자 관점 3. 주의할 리스크 요소 4. 종합 투자 의견 포함.`,
+        messages: [{ role: 'user', content:
+          `${stock.name}(${stock.code}) 실시간 데이터:
+현재가: ${stock.price?.toLocaleString()}원 / 등락률: ${stock.changeRate >= 0 ? '+' : ''}${stock.changeRate}% / 거래량: ${stock.volume} / 시가총액: ${stock.marketCap}억원 / 조회: ${stock.updatedAt}
+이 데이터를 바탕으로 투자 분석 의견을 주세요.` }]
+      })
+    });
+    const d = await res.json();
+    const text = d.content?.map(c => c.text || '').join('') || '분석 결과를 받지 못했습니다.';
+    const rate = stock.changeRate || 0;
+    const cls = rate > 0 ? 'up' : rate < 0 ? 'down' : 'flat';
+    const sign = rate > 0 ? '▲' : rate < 0 ? '▼' : '';
+    result.innerHTML = `
+      <div class="card fade-in" style="margin-bottom:12px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+          <div><span style="font-size:18px;font-weight:700;">${stock.name}</span><span style="font-size:12px;color:var(--text-muted);margin-left:8px;">${stock.code}</span></div>
+          <div>
+            <span style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;color:var(--rose-dark);">${stock.price?.toLocaleString()}원</span>
+            <span class="${cls}" style="font-size:13px;margin-left:8px;">${sign} ${Math.abs(rate).toFixed(2)}%</span>
+          </div>
+        </div>
+      </div>
+      <div class="ai-panel fade-in">
+        <div class="ai-header">
+          <div class="ai-icon">✦</div>
+          <div><div class="ai-title">AI 투자 분석 <small>실시간 데이터 기반 · Claude Sonnet</small></div></div>
+        </div>
+        <div class="ai-body">${text}</div>
+      </div>`;
+  } catch (e) {
+    result.innerHTML = `<div class="alert">AI 오류: ${e.message}</div>`;
+  }
+}
+
+// ── 초기화 ──
+(async () => {
+  await checkServer();
+  renderPort();
+  if (watchList.length) {
+    renderWatchRows(watchList.map(w => ({ ...w, price: null, changeRate: 0 })));
+    await refreshAll();
+  } else {
+    document.getElementById('watchList').innerHTML =
+      '<div class="alert info">워치리스트가 비어 있습니다. 종목을 추가해보세요.</div>';
+  }
+  setInterval(refreshAll, 60000);
+})();
+</script>
+</body>
+</html>
