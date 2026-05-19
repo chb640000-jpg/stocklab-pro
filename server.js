@@ -1,3 +1,4 @@
+const https = require('https');
 /**
  * STOCKLAB PRO - 프록시 서버 (Railway 배포용)
  * 로컬: node server.js
